@@ -47,12 +47,27 @@ func handleBlock(dg *discordgo.Session, i *discordgo.Interaction, block extract.
 }
 
 func handleMessage(dg *discordgo.Session, i *discordgo.Interaction, msg *discordgo.Message) {
+	var found bool
 	for block := range extract.CodeBlocks(msg.Content) {
 		if block.Language != "go" && block.Language != "" {
 			continue
 		}
 
+		found = true
 		handleBlock(dg, i, block)
+	}
+	if !found {
+		err := dg.InteractionRespond(i, &discordgo.InteractionResponse{
+			Type: discordgo.InteractionResponseChannelMessageWithSource,
+			Data: &discordgo.InteractionResponseData{
+				Content: "No Go code blocks found. Note that all code blocks that are not either `go` blocks or have no language specified are ignored.",
+				Flags:   discordgo.MessageFlagsEphemeral,
+			},
+		})
+		if err != nil {
+			slog.Error("respond to interaction", "err", err)
+			return
+		}
 	}
 }
 
