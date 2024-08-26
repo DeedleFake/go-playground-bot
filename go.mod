@@ -3,6 +3,7 @@ module github.com/DeedleFake/go-playground-bot
 go 1.23.0
 
 require (
+	deedles.dev/xiter v0.0.0-20240825023150-1849aa7a9329
 	github.com/bwmarrin/discordgo v0.28.1
 	golang.org/x/tools v0.24.0
 )
