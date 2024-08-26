@@ -51,9 +51,5 @@ var argumentSM = machine{
 }
 
 func check(b byte) bool {
-	if b > 0 {
-		return true
-	}
-
-	return false
+	return b > 0
 }

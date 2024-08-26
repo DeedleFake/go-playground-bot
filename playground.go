@@ -8,14 +8,15 @@ import (
 	"go/format"
 	"go/parser"
 	"go/token"
-	"golang.org/x/tools/go/ast/astutil"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
+
+	"golang.org/x/tools/go/ast/astutil"
 )
 
 var bufferPool = &sync.Pool{}
@@ -39,7 +40,7 @@ func PostToPlayground(src string) error {
 		return fmt.Errorf("PostToPlayground: got non-200 response: %s", resp.Status)
 	}
 
-	linkID, err := ioutil.ReadAll(resp.Body)
+	linkID, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return fmt.Errorf("PostToPlayground: %v", err)
 	}
@@ -164,7 +165,7 @@ retry:
 	}{b2s(buf.Bytes()), false}
 
 	if debug {
-		debugMemory = string(buf.Bytes()) + "\n------\n"
+		debugMemory = buf.String() + "\n------\n"
 	}
 
 	b, err := json.Marshal(&data)
@@ -191,7 +192,7 @@ retry:
 		closeOnce = true
 	}
 
-	b, err = ioutil.ReadAll(resp.Body)
+	b, err = io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("CompileAndRun: %v", err)
 	}
@@ -487,12 +488,7 @@ func hasFunc(f *ast.File, name string) bool {
 }
 
 func hasImport(f *ast.File, path string) bool {
-	is := importSpec(f, path)
-	if is != nil {
-		return true
-	}
-
-	return false
+	return importSpec(f, path) != nil
 }
 
 func importSpec(f *ast.File, path string) *ast.ImportSpec {

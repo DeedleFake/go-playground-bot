@@ -239,25 +239,30 @@ func main() {
 			return
 		}
 
-		dmsgs := make([]string, 0, 2)
-		for _, msg := range msgs {
-			if len(dmsgs) >= num {
-				break
-			}
+		var numdmsgs int
+		dmsgs := func(yield func(string) bool) {
+			for _, msg := range msgs {
+				if numdmsgs >= num {
+					break
+				}
 
-			if msg.Author.ID == cfg.botID {
-				dmsgs = append(dmsgs, msg.ID)
+				if msg.Author.ID == cfg.botID {
+					if !yield(msg.ID) {
+						return
+					}
+					numdmsgs++
+				}
 			}
 		}
 
-		for _, dmsg := range dmsgs {
+		for dmsg := range dmsgs {
 			err = s.ChannelMessageDelete(m.ChannelID, dmsg)
 			if err != nil {
 				log.Println("ChannelMessageDelete: ", err)
 			}
 		}
 
-		if len(dmsgs) > 0 {
+		if numdmsgs > 0 {
 			s.MessageReactionAdd(m.ChannelID, m.ID, "😐")
 		}
 	}
@@ -429,23 +434,6 @@ func sendDeletable(s *discordgo.Session, ctx *discordgo.Message, content interfa
 	time.AfterFunc(delay, func() {
 		cancelAll()
 	})
-}
-
-func hasRole(s *discordgo.Session, guildID, userID, roleID string) bool {
-	member, err := s.GuildMember(guildID, userID)
-	if err != nil {
-		log.Println("hasRole:", err)
-
-		return false
-	}
-
-	for _, rid := range member.Roles {
-		if roleID == rid {
-			return true
-		}
-	}
-
-	return false
 }
 
 func hasRoleName(s *discordgo.Session, guildID, userID, roleName string) bool {
