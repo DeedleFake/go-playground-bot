@@ -14,6 +14,44 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
+func handleMessage(dg *discordgo.Session, i *discordgo.Interaction, msg *discordgo.Message) {
+	result, err := CompileAndRun(msg.Content, false)
+	if err != nil {
+		slog.Error("run code", "err", err)
+		return
+	}
+
+	var rsp playgroundResponse
+	err = json.Unmarshal(result, &rsp)
+	if err != nil {
+		slog.Error("decode response", "result", result, "err", err)
+		return
+	}
+	events := xiter.SliceChunksFunc(rsp.Events, func(ev Event) string { return ev.Kind })
+
+	var output strings.Builder
+	for chunk := range events {
+		output.WriteString(chunk[0].Kind)
+		output.WriteString(":\n```\n")
+		for _, ev := range chunk {
+			output.WriteString(ev.Message)
+		}
+		output.WriteString("\n```")
+	}
+
+	err = dg.InteractionRespond(i, &discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseChannelMessageWithSource,
+		Data: &discordgo.InteractionResponseData{
+			Content: output.String(),
+			Flags:   discordgo.MessageFlagsEphemeral,
+		},
+	})
+	if err != nil {
+		slog.Error("respond to interaction", "err", err)
+		return
+	}
+}
+
 func handleCommand(dg *discordgo.Session, i *discordgo.InteractionCreate) {
 	slog.Info("command", "name", i.ApplicationCommandData().Name, "user", i.Member.User)
 
@@ -24,41 +62,7 @@ func handleCommand(dg *discordgo.Session, i *discordgo.InteractionCreate) {
 	}
 
 	for _, msg := range data.Resolved.Messages {
-		result, err := CompileAndRun(msg.Content, false)
-		if err != nil {
-			slog.Error("run code", "err", err)
-			continue
-		}
-
-		var rsp playgroundResponse
-		err = json.Unmarshal(result, &rsp)
-		if err != nil {
-			slog.Error("decode response", "result", result, "err", err)
-			continue
-		}
-		events := xiter.SliceChunksFunc(rsp.Events, func(ev Event) string { return ev.Kind })
-
-		var output strings.Builder
-		for chunk := range events {
-			output.WriteString(chunk[0].Kind)
-			output.WriteString(":\n```\n")
-			for _, ev := range chunk {
-				output.WriteString(ev.Message)
-			}
-			output.WriteString("\n```")
-		}
-
-		err = dg.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-			Type: discordgo.InteractionResponseChannelMessageWithSource,
-			Data: &discordgo.InteractionResponseData{
-				Content: output.String(),
-				Flags:   discordgo.MessageFlagsEphemeral,
-			},
-		})
-		if err != nil {
-			slog.Error("respond to interaction", "err", err)
-			continue
-		}
+		handleMessage(dg, i.Interaction, msg)
 	}
 }
 
