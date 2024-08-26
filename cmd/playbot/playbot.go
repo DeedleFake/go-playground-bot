@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -11,23 +10,18 @@ import (
 	"strings"
 
 	"deedles.dev/xiter"
+	"github.com/DeedleFake/go-playground-bot/internal/extract"
+	"github.com/DeedleFake/go-playground-bot/internal/play"
 	"github.com/bwmarrin/discordgo"
 )
 
-func handleMessage(dg *discordgo.Session, i *discordgo.Interaction, msg *discordgo.Message) {
-	result, err := CompileAndRun(msg.Content, false)
+func handleBlock(dg *discordgo.Session, i *discordgo.Interaction, block extract.CodeBlock) {
+	result, err := play.Run(block.Source)
 	if err != nil {
 		slog.Error("run code", "err", err)
 		return
 	}
-
-	var rsp playgroundResponse
-	err = json.Unmarshal(result, &rsp)
-	if err != nil {
-		slog.Error("decode response", "result", result, "err", err)
-		return
-	}
-	events := xiter.SliceChunksFunc(rsp.Events, func(ev Event) string { return ev.Kind })
+	events := xiter.SliceChunksFunc(result.Events, func(ev play.Event) string { return ev.Kind })
 
 	var output strings.Builder
 	for chunk := range events {
@@ -49,6 +43,16 @@ func handleMessage(dg *discordgo.Session, i *discordgo.Interaction, msg *discord
 	if err != nil {
 		slog.Error("respond to interaction", "err", err)
 		return
+	}
+}
+
+func handleMessage(dg *discordgo.Session, i *discordgo.Interaction, msg *discordgo.Message) {
+	for block := range extract.CodeBlocks(msg.Content) {
+		if block.Language != "go" && block.Language != "" {
+			continue
+		}
+
+		handleBlock(dg, i, block)
 	}
 }
 
