@@ -93,8 +93,8 @@ func CompileAndRun(str string, debug bool) ([]byte, error) {
 	if !ok {
 		buf = bytes.NewBuffer(make([]byte, 0, len(code)))
 	}
-	defer buf.Reset()
 	defer bufferPool.Put(buf)
+	defer buf.Reset()
 
 	buf.WriteString(code)
 
