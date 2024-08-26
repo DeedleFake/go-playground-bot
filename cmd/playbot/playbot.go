@@ -336,11 +336,36 @@ func isPrintable(content string) bool {
 	return false
 }
 
+func handleCommand(dg *discordgo.Session, i *discordgo.InteractionCreate) {
+	slog.Info("command", "name", i.ApplicationCommandData().Name, "user", i.Member.User)
+
+	data, ok := i.Data.(discordgo.ApplicationCommandInteractionData)
+	if !ok {
+		slog.Error("interaction data unexpected type", "data", i.Data)
+		return
+	}
+
+	for _, msg := range data.Resolved.Messages {
+		err := dg.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+			Type: discordgo.InteractionResponseChannelMessageWithSource,
+			Data: &discordgo.InteractionResponseData{
+				Content: msg.Content,
+				Flags:   discordgo.MessageFlagsEphemeral,
+			},
+		})
+		if err != nil {
+			slog.Error("respond to interaction", "err", err)
+			continue
+		}
+	}
+}
+
 func commands() []*discordgo.ApplicationCommand {
 	return []*discordgo.ApplicationCommand{
-		{Name: "go", Description: "Run Go code", Options: []*discordgo.ApplicationCommandOption{
-			{Type: discordgo.ApplicationCommandOptionBoolean, Name: "public", Description: "Display output publicly"},
-		}},
+		{
+			Type: discordgo.MessageApplicationCommand,
+			Name: "Run Go Code",
+		},
 	}
 }
 
@@ -357,21 +382,7 @@ func run(ctx context.Context) error {
 	dg.AddHandler(func(dg *discordgo.Session, r *discordgo.Ready) {
 		slog.Info("authenticated successfully", "user", r.User)
 	})
-	dg.AddHandler(func(dg *discordgo.Session, i *discordgo.InteractionCreate) {
-		slog.Info("command", "name", i.ApplicationCommandData().Name, "user", i.Member.User)
-
-		err := dg.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-			Type: discordgo.InteractionResponseChannelMessageWithSource,
-			Data: &discordgo.InteractionResponseData{
-				Content: "Not implemented.",
-				Flags:   discordgo.MessageFlagsEphemeral,
-			},
-		})
-		if err != nil {
-			slog.Error("respond to interaction", "err", err)
-			return
-		}
-	})
+	dg.AddHandler(handleCommand)
 
 	err = dg.Open()
 	if err != nil {
