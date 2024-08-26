@@ -12,6 +12,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
+// setupResponse sets up the interaction for a deferred response.
 func setupResponse(dg *discordgo.Session, i *discordgo.Interaction) error {
 	return dg.InteractionRespond(i, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseDeferredChannelMessageWithSource,
@@ -22,6 +23,8 @@ func setupResponse(dg *discordgo.Session, i *discordgo.Interaction) error {
 	})
 }
 
+// updateResponse sets the content of a deferred interaction response
+// as set up by [setupResponse].
 func updateResponse(dg *discordgo.Session, i *discordgo.Interaction, content string) error {
 	_, err := dg.InteractionResponseEdit(i, &discordgo.WebhookEdit{
 		Content: &content,
@@ -29,13 +32,11 @@ func updateResponse(dg *discordgo.Session, i *discordgo.Interaction, content str
 	return err
 }
 
-func commands() []*discordgo.ApplicationCommand {
-	return []*discordgo.ApplicationCommand{
-		{
-			Type: discordgo.MessageApplicationCommand,
-			Name: "Run Go Code",
-		},
-	}
+var commands = []*discordgo.ApplicationCommand{
+	{
+		Type: discordgo.MessageApplicationCommand,
+		Name: "Run Go Code",
+	},
 }
 
 func run(ctx context.Context) error {
@@ -60,7 +61,7 @@ func run(ctx context.Context) error {
 	defer dg.Close()
 
 	for _, guild := range dg.State.Guilds {
-		for _, cmd := range commands() {
+		for _, cmd := range commands {
 			r, err := dg.ApplicationCommandCreate(dg.State.User.ID, guild.ID, cmd)
 			if err != nil {
 				return fmt.Errorf("register command %q: %w", cmd.Name, err)

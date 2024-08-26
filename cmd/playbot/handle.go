@@ -10,6 +10,8 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
+// handleBlock runs the logic for a single block of Go code in a
+// message.
 func handleBlock(dg *discordgo.Session, i *discordgo.Interaction, block extract.CodeBlock) {
 	err := setupResponse(dg, i)
 	if err != nil {
@@ -48,6 +50,7 @@ func handleBlock(dg *discordgo.Session, i *discordgo.Interaction, block extract.
 	}
 }
 
+// handleMessage responds to a single message.
 func handleMessage(dg *discordgo.Session, i *discordgo.Interaction, msg *discordgo.Message) {
 	var found bool
 	for block := range extract.CodeBlocks(msg.Content) {
@@ -73,6 +76,7 @@ func handleMessage(dg *discordgo.Session, i *discordgo.Interaction, msg *discord
 	}
 }
 
+// handleCommand handles INTERACTION_CREATE events.
 func handleCommand(dg *discordgo.Session, i *discordgo.InteractionCreate) {
 	slog.Info("command", "name", i.ApplicationCommandData().Name, "user", i.Member.User)
 
