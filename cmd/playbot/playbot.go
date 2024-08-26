@@ -147,27 +147,26 @@ func commandHandler(cfg *config, s *discordgo.Session, msg any) func() {
 	var (
 		content string
 		pmsg    *discordgo.Message
-		bot     = true
 	)
 
 	switch m := msg.(type) {
 	case *discordgo.MessageCreate:
-		pmsg = m.Message
-		content = m.Content
-		bot = m.Author.Bot
-	case *discordgo.MessageUpdate:
-		pmsg = m.Message
-		content = m.Content
-		if m.Author != nil {
-			bot = m.Author.Bot
-		} else {
-			bot = false
+		if m.Author.Bot {
+			return nil
 		}
+
+		pmsg = m.Message
+		content = m.Content
+
+	case *discordgo.MessageUpdate:
+		if m.Author != nil && m.Author.Bot {
+			return nil
+		}
+
+		pmsg = m.Message
+		content = m.Content
+
 	default:
-
-	}
-
-	if bot {
 		return nil
 	}
 
