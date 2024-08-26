@@ -22,6 +22,13 @@ func setupResponse(dg *discordgo.Session, i *discordgo.Interaction) error {
 	})
 }
 
+func updateResponse(dg *discordgo.Session, i *discordgo.Interaction, content string) error {
+	_, err := dg.InteractionResponseEdit(i, &discordgo.WebhookEdit{
+		Content: &content,
+	})
+	return err
+}
+
 func commands() []*discordgo.ApplicationCommand {
 	return []*discordgo.ApplicationCommand{
 		{

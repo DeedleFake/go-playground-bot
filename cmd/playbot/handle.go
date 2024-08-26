@@ -22,9 +22,16 @@ func handleBlock(dg *discordgo.Session, i *discordgo.Interaction, block extract.
 		slog.Error("run code", "err", err)
 		return
 	}
-	events := xiter.SliceChunksFunc(result.Events, func(ev play.Event) string { return ev.Kind })
+	if result.Errors != "" {
+		err = updateResponse(dg, i, "Error:\n```\n"+result.Errors+"\n```")
+		if err != nil {
+			slog.Error("update response with error", "err", err)
+		}
+		return
+	}
 
 	var output strings.Builder
+	events := xiter.SliceChunksFunc(result.Events, func(ev play.Event) string { return ev.Kind })
 	for chunk := range events {
 		output.WriteString(chunk[0].Kind)
 		output.WriteString(":\n```\n")
@@ -34,12 +41,9 @@ func handleBlock(dg *discordgo.Session, i *discordgo.Interaction, block extract.
 		output.WriteString("\n```")
 	}
 
-	outputstr := output.String()
-	_, err = dg.InteractionResponseEdit(i, &discordgo.WebhookEdit{
-		Content: &outputstr,
-	})
+	err = updateResponse(dg, i, output.String())
 	if err != nil {
-		slog.Error("respond to interaction", "err", err)
+		slog.Error("update response", "err", err)
 		return
 	}
 }
