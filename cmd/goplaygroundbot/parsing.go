@@ -38,7 +38,7 @@ func catchPrefix(content string, prefix string, botID string) string {
 type parsingResult struct {
 	content string
 	command string
-	options map[string]interface{}
+	options map[string]any
 }
 
 func parseCommand(content string, separators string, optionMarkers []string, assignmentMarker []string) *parsingResult {
@@ -53,7 +53,7 @@ func parseCommand(content string, separators string, optionMarkers []string, ass
 		currentState byte
 	)
 
-	options := make(map[string]interface{})
+	options := make(map[string]any)
 
 	var i int
 	for i = 0; i < len(content); i++ {

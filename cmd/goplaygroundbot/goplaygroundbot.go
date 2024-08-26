@@ -143,7 +143,7 @@ func playground(cfg *config, s *discordgo.Session, m *discordgo.Message, res *pa
 	sendDeletable(s, m, emb, 5*time.Minute)
 }
 
-func commandHandler(cfg *config, s *discordgo.Session, msg interface{}) func() {
+func commandHandler(cfg *config, s *discordgo.Session, msg any) func() {
 	var (
 		content string
 		pmsg    *discordgo.Message
@@ -322,7 +322,7 @@ func main() {
 	<-sig
 }
 
-func findBoolOption(m map[string]interface{}, variants ...string) bool {
+func findBoolOption(m map[string]any, variants ...string) bool {
 	for _, v := range variants {
 		r, ok := m[v].(bool)
 		if ok {
@@ -333,7 +333,7 @@ func findBoolOption(m map[string]interface{}, variants ...string) bool {
 	return false
 }
 
-func sendDeletable(s *discordgo.Session, ctx *discordgo.Message, content interface{}, delay time.Duration) {
+func sendDeletable(s *discordgo.Session, ctx *discordgo.Message, content any, delay time.Duration) {
 	var (
 		msg *discordgo.Message
 		err error
