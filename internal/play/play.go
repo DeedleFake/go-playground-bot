@@ -13,8 +13,10 @@ const compileURL = "https://play.golang.org/compile"
 
 // Result is the result of running some code in the playground.
 type Result struct {
-	Errors string
-	Events []Event
+	Errors      string
+	Events      []Event
+	IsTest      bool
+	TestsFailed int
 }
 
 // Event is an output event from code run in the playground.
