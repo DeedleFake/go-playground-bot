@@ -1,3 +1,5 @@
+deedles.dev/dgutil v0.0.0-20240827155357-d418131d1829 h1:EKGZVlgC4xZO9vBCjGi7R5L1xBQM6X2SnxL26vNh/ZE=
+deedles.dev/dgutil v0.0.0-20240827155357-d418131d1829/go.mod h1:DF+QzBD+KlFL+rjYhKbpd2Xw7izNvHgzxnRdx02Kty0=
 deedles.dev/xiter v0.0.0-20240825023150-1849aa7a9329 h1:9V9hoOIF69r/I9U9jN8Ub7/9W2+KgwsguIjH42sgVwQ=
 deedles.dev/xiter v0.0.0-20240825023150-1849aa7a9329/go.mod h1:59997UHUsKAy/8bHUClTfeXdyuLZ6z/+yF++vIpxfx8=
 github.com/bwmarrin/discordgo v0.28.1 h1:gXsuo2GBO7NbR6uqmrrBDplPUx2T3nzu775q/Rd1aG4=

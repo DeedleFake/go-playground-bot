@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"strings"
 
+	"deedles.dev/dgutil"
 	"deedles.dev/xiter"
 	"github.com/DeedleFake/go-playground-bot/internal/extract"
 	"github.com/DeedleFake/go-playground-bot/internal/play"
@@ -48,7 +49,7 @@ func buildOutput(result play.Result) string {
 // handleBlock runs the logic for a single block of Go code in a
 // message.
 func handleBlock(dg *discordgo.Session, i *discordgo.Interaction, block extract.CodeBlock) {
-	err := setupResponse(dg, i)
+	err := dgutil.SetupResponse(dg, i)
 	if err != nil {
 		slog.Error("setup response", "err", err)
 		return
@@ -61,7 +62,7 @@ func handleBlock(dg *discordgo.Session, i *discordgo.Interaction, block extract.
 	}
 
 	output := buildOutput(result)
-	err = updateResponse(dg, i, output)
+	err = dgutil.UpdateResponse(dg, i, output)
 	if err != nil {
 		slog.Error("update response", "err", err)
 		return
