@@ -2,14 +2,21 @@
 package play
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"net/url"
+	"regexp"
+	"unsafe"
+
+	"golang.org/x/tools/imports"
 )
 
 const compileURL = "https://play.golang.org/compile"
+
+var noPackageError = regexp.MustCompile(`^prog\.go:1:1: expected 'package', found [a-zA-Z0-9_]+\n$`)
 
 // Result is the result of running some code in the playground.
 type Result struct {
@@ -54,5 +61,24 @@ func Run(source string) (result Result, err error) {
 	if err != nil {
 		return result, fmt.Errorf("decode result: %w", err)
 	}
+	if noPackageError.MatchString(result.Errors) {
+		source, err := MainWrap(source)
+		if err != nil {
+			return result, fmt.Errorf("wrap with main: %w", err)
+		}
+		return Run(source) // TODO: Adjust error line numbers?
+	}
+
 	return result, nil
+}
+
+// MainWrap wraps source code in a main package and main function.
+func MainWrap(source string) (string, error) {
+	var buf bytes.Buffer
+	buf.WriteString("package main\n\nfunc main() {\n")
+	buf.WriteString(source)
+	buf.WriteString("\n}")
+
+	formatted, err := imports.Process("prog.go", buf.Bytes(), nil)
+	return unsafe.String(unsafe.SliceData(formatted), len(formatted)), err
 }
