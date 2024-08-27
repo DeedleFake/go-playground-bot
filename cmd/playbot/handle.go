@@ -11,29 +11,22 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-// handleBlock runs the logic for a single block of Go code in a
-// message.
-func handleBlock(dg *discordgo.Session, i *discordgo.Interaction, block extract.CodeBlock) {
-	err := setupResponse(dg, i)
-	if err != nil {
-		slog.Error("setup response", "err", err)
-		return
-	}
-
-	result, err := play.Run(block.Source)
-	if err != nil {
-		slog.Error("run code", "err", err)
-		return
-	}
-	if result.Errors != "" {
-		err = updateResponse(dg, i, "Error:\n```\n"+result.Errors+"\n```")
-		if err != nil {
-			slog.Error("update response with error", "err", err)
-		}
-		return
-	}
-
+// buildOutput builds the content of a message from the result of the
+// playground.
+func buildOutput(result play.Result) string {
 	var output strings.Builder
+
+	if result.Errors != "" {
+		output.WriteString("Compile errors:\n```\n")
+		output.WriteString(result.Errors)
+		output.WriteString("\n```")
+	}
+
+	if !result.VetOK {
+		output.WriteString("Vet errors:\n```\n")
+		output.WriteString(result.VetErrors)
+		output.WriteString("\n```")
+	}
 
 	if result.IsTest {
 		fmt.Fprintf(&output, "Test failures: %v\n", result.TestsFailed)
@@ -49,7 +42,26 @@ func handleBlock(dg *discordgo.Session, i *discordgo.Interaction, block extract.
 		output.WriteString("\n```")
 	}
 
-	err = updateResponse(dg, i, output.String())
+	return output.String()
+}
+
+// handleBlock runs the logic for a single block of Go code in a
+// message.
+func handleBlock(dg *discordgo.Session, i *discordgo.Interaction, block extract.CodeBlock) {
+	err := setupResponse(dg, i)
+	if err != nil {
+		slog.Error("setup response", "err", err)
+		return
+	}
+
+	result, err := play.Run(block.Source)
+	if err != nil {
+		slog.Error("run code", "err", err)
+		return
+	}
+
+	output := buildOutput(result)
+	err = updateResponse(dg, i, output)
 	if err != nil {
 		slog.Error("update response", "err", err)
 		return
