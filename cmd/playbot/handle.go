@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log/slog"
 	"strings"
 
@@ -33,6 +34,11 @@ func handleBlock(dg *discordgo.Session, i *discordgo.Interaction, block extract.
 	}
 
 	var output strings.Builder
+
+	if result.IsTest {
+		fmt.Fprintf(&output, "Test failures: %v\n", result.TestsFailed)
+	}
+
 	events := xiter.SliceChunksFunc(result.Events, func(ev play.Event) string { return ev.Kind })
 	for chunk := range events {
 		output.WriteString(chunk[0].Kind)
