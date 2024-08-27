@@ -17,6 +17,8 @@ type Result struct {
 	Events      []Event
 	IsTest      bool
 	TestsFailed int
+	VetErrors   string
+	VetOK       bool
 }
 
 // Event is an output event from code run in the playground.
@@ -35,6 +37,7 @@ type Event struct {
 func Run(source string) (result Result, err error) {
 	data := make(url.Values)
 	data.Set("body", source)
+	data.Set("withVet", "true")
 
 	rsp, err := http.PostForm(compileURL, data)
 	if err != nil {
