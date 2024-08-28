@@ -3,12 +3,14 @@ package play
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"net/url"
 	"regexp"
+	"strings"
 	"unsafe"
 
 	"golang.org/x/tools/imports"
@@ -41,12 +43,23 @@ type Event struct {
 // successfully and a result is returned, err will be nil, even if the
 // playground itself failed to run due to an error in the code
 // submitted.
-func Run(source string) (result Result, err error) {
+func Run(ctx context.Context, source string) (result Result, err error) {
 	data := make(url.Values)
 	data.Set("body", source)
 	data.Set("withVet", "true")
 
-	rsp, err := http.PostForm(compileURL, data)
+	req, err := http.NewRequestWithContext(
+		ctx,
+		http.MethodPost,
+		compileURL,
+		strings.NewReader(data.Encode()),
+	)
+	if err != nil {
+		return result, fmt.Errorf("create request: %w", err)
+	}
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	rsp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return result, fmt.Errorf("post: %w", err)
 	}
@@ -59,14 +72,14 @@ func Run(source string) (result Result, err error) {
 
 	err = json.Unmarshal(buf, &result)
 	if err != nil {
-		return result, fmt.Errorf("decode result: %w", err)
+		return result, fmt.Errorf("decode result: %w\n%q", err, buf)
 	}
 	if noPackageError.MatchString(result.Errors) {
 		source, err := MainWrap(source)
 		if err != nil {
 			return result, fmt.Errorf("wrap with main: %w", err)
 		}
-		return Run(source) // TODO: Adjust error line numbers?
+		return Run(ctx, source) // TODO: Adjust error line numbers?
 	}
 
 	return result, nil
