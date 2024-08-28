@@ -1,9 +1,11 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log/slog"
 	"strings"
+	"time"
 
 	"deedles.dev/dgutil"
 	"deedles.dev/xiter"
@@ -55,7 +57,10 @@ func handleBlock(dg *discordgo.Session, i *discordgo.Interaction, block extract.
 		return
 	}
 
-	result, err := play.Run(block.Source)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+	defer cancel()
+
+	result, err := play.Run(ctx, block.Source)
 	if err != nil {
 		slog.Error("run code", "err", err)
 		err = dgutil.UpdateResponse(dg, i, fmt.Sprintf("Playground error:\n```\n%v\n```", err))
