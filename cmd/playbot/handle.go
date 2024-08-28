@@ -23,7 +23,7 @@ func buildOutput(result play.Result) string {
 		output.WriteString("\n```")
 	}
 
-	if !result.VetOK {
+	if result.VetErrors != "" {
 		output.WriteString("Vet errors:\n```\n")
 		output.WriteString(result.VetErrors)
 		output.WriteString("\n```")
