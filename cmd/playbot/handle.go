@@ -58,6 +58,10 @@ func handleBlock(dg *discordgo.Session, i *discordgo.Interaction, block extract.
 	result, err := play.Run(block.Source)
 	if err != nil {
 		slog.Error("run code", "err", err)
+		err = dgutil.UpdateResponse(dg, i, fmt.Sprintf("Playground error:\n```\n%v\n```", err))
+		if err != nil {
+			slog.Error("update response", "err", err)
+		}
 		return
 	}
 
