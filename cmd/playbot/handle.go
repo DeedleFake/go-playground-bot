@@ -66,6 +66,9 @@ func handleBlock(dg *discordgo.Session, i *discordgo.Interaction, block extract.
 	}
 
 	output := buildOutput(result)
+	if output == "" {
+		output = "No output."
+	}
 	err = dgutil.UpdateResponse(dg, i, output)
 	if err != nil {
 		slog.Error("update response", "err", err)
