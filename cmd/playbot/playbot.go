@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"os"
 	"os/signal"
@@ -21,7 +22,11 @@ var commands = []*discordgo.ApplicationCommand{
 func setup(s *dgutil.Setup) error {
 	dg := s.Session()
 	dg.AddHandler(handleCommand)
-	s.RegisterCommands(slices.Values(commands))
+
+	err := s.RegisterCommands(slices.Values(commands))
+	if err != nil {
+		return fmt.Errorf("register commands: %w", err)
+	}
 
 	return nil
 }

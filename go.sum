@@ -1,7 +1,7 @@
-deedles.dev/dgutil v0.0.0-20240827160402-5044432016da h1:abmpq7PW/oxsgQ1qyS5Y3Ld/VlFF4+gfU1FEY0hWM+A=
-deedles.dev/dgutil v0.0.0-20240827160402-5044432016da/go.mod h1:DF+QzBD+KlFL+rjYhKbpd2Xw7izNvHgzxnRdx02Kty0=
-deedles.dev/xiter v0.0.0-20240825023150-1849aa7a9329 h1:9V9hoOIF69r/I9U9jN8Ub7/9W2+KgwsguIjH42sgVwQ=
-deedles.dev/xiter v0.0.0-20240825023150-1849aa7a9329/go.mod h1:59997UHUsKAy/8bHUClTfeXdyuLZ6z/+yF++vIpxfx8=
+deedles.dev/dgutil v0.0.0-20240829174132-b8bd1522ab54 h1:fyzluCz2jZQSI+c+LkcWRmCm+QiTUQegIbZk/2AxJfw=
+deedles.dev/dgutil v0.0.0-20240829174132-b8bd1522ab54/go.mod h1:DF+QzBD+KlFL+rjYhKbpd2Xw7izNvHgzxnRdx02Kty0=
+deedles.dev/xiter v0.0.0-20240828164055-3209e7f8ab1c h1:Y4wFHbElis+PUI3+12XBERi2RBYwyfOPXcSXbgb/uFI=
+deedles.dev/xiter v0.0.0-20240828164055-3209e7f8ab1c/go.mod h1:59997UHUsKAy/8bHUClTfeXdyuLZ6z/+yF++vIpxfx8=
 github.com/bwmarrin/discordgo v0.28.1 h1:gXsuo2GBO7NbR6uqmrrBDplPUx2T3nzu775q/Rd1aG4=
 github.com/bwmarrin/discordgo v0.28.1/go.mod h1:NJZpH+1AfhIcyQsPeuBKsUtYrRnjkyu0kIVMCHkZtRY=
 github.com/gorilla/websocket v1.4.2/go.mod h1:YR8l580nyteQvAITg2hZ9XVh4b55+EU/adAjf1fMHhE=
