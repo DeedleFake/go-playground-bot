@@ -19,9 +19,9 @@ var commands = []*discordgo.ApplicationCommand{
 	},
 }
 
-func setup(s *dgutil.Setup) error {
+func setup(ctx context.Context, s *dgutil.Setup) error {
 	dg := s.Session()
-	dg.AddHandler(handleCommand)
+	dgutil.AddHandlerWithContext(ctx, dg, handleCommand)
 
 	err := s.RegisterCommands(slices.Values(commands))
 	if err != nil {
@@ -35,7 +35,7 @@ func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
 
-	err := dgutil.Run(ctx, setup)
+	err := dgutil.Run(ctx, func(s *dgutil.Setup) error { return setup(ctx, s) })
 	if err != nil {
 		slog.Error("failed", "err", err)
 		os.Exit(1)

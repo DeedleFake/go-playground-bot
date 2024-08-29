@@ -50,14 +50,14 @@ func buildOutput(result play.Result) string {
 
 // handleBlock runs the logic for a single block of Go code in a
 // message.
-func handleBlock(dg *discordgo.Session, i *discordgo.Interaction, block extract.CodeBlock) {
+func handleBlock(ctx context.Context, dg *discordgo.Session, i *discordgo.Interaction, block extract.CodeBlock) {
 	err := dgutil.SetupResponse(dg, i)
 	if err != nil {
 		slog.Error("setup response", "err", err)
 		return
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+	ctx, cancel := context.WithTimeout(ctx, time.Minute)
 	defer cancel()
 
 	result, err := play.Run(ctx, block.Source)
@@ -82,7 +82,7 @@ func handleBlock(dg *discordgo.Session, i *discordgo.Interaction, block extract.
 }
 
 // handleMessage responds to a single message.
-func handleMessage(dg *discordgo.Session, i *discordgo.Interaction, msg *discordgo.Message) {
+func handleMessage(ctx context.Context, dg *discordgo.Session, i *discordgo.Interaction, msg *discordgo.Message) {
 	var found bool
 	for block := range extract.CodeBlocks(msg.Content) {
 		if block.Language != "go" && block.Language != "" {
@@ -90,7 +90,7 @@ func handleMessage(dg *discordgo.Session, i *discordgo.Interaction, msg *discord
 		}
 
 		found = true
-		handleBlock(dg, i, block)
+		handleBlock(ctx, dg, i, block)
 	}
 	if !found {
 		err := dg.InteractionRespond(i, &discordgo.InteractionResponse{
@@ -108,7 +108,7 @@ func handleMessage(dg *discordgo.Session, i *discordgo.Interaction, msg *discord
 }
 
 // handleCommand handles INTERACTION_CREATE events.
-func handleCommand(dg *discordgo.Session, i *discordgo.InteractionCreate) {
+func handleCommand(ctx context.Context, dg *discordgo.Session, i *discordgo.InteractionCreate) {
 	slog.Info("command", "name", i.ApplicationCommandData().Name, "user", i.Member.User)
 
 	data, ok := i.Data.(discordgo.ApplicationCommandInteractionData)
@@ -118,6 +118,6 @@ func handleCommand(dg *discordgo.Session, i *discordgo.InteractionCreate) {
 	}
 
 	for _, msg := range data.Resolved.Messages {
-		handleMessage(dg, i.Interaction, msg)
+		handleMessage(ctx, dg, i.Interaction, msg)
 	}
 }
