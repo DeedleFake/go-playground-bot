@@ -3,7 +3,7 @@ module github.com/DeedleFake/go-playground-bot
 go 1.23.0
 
 require (
-	deedles.dev/dgutil v0.0.0-20240829174132-b8bd1522ab54
+	deedles.dev/dgutil v0.0.0-20240829225330-17f1a63e7e2d
 	deedles.dev/xiter v0.0.0-20240828164055-3209e7f8ab1c
 	github.com/bwmarrin/discordgo v0.28.1
 	github.com/yuin/goldmark v1.7.4
