@@ -2,10 +2,10 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log/slog"
 	"os"
 	"os/signal"
+	"runtime/pprof"
 	"slices"
 
 	"deedles.dev/dgutil"
@@ -23,15 +23,39 @@ func setup(ctx context.Context, s *dgutil.Setup) error {
 	dg := s.Session()
 	dgutil.AddHandlerWithContext(ctx, dg, handleCommand)
 
-	err := s.RegisterCommands(slices.Values(commands))
-	if err != nil {
-		return fmt.Errorf("register commands: %w", err)
-	}
+	s.RegisterCommands(slices.Values(commands))
 
 	return nil
 }
 
+func profile() func() {
+	path, ok := os.LookupEnv("PPROF")
+	if !ok {
+		return func() {}
+	}
+
+	file, err := os.Create(path)
+	if err != nil {
+		panic(err)
+	}
+
+	err = pprof.StartCPUProfile(file)
+	if err != nil {
+		panic(err)
+	}
+
+	return func() {
+		pprof.StopCPUProfile()
+		err := file.Close()
+		if err != nil {
+			panic(err)
+		}
+	}
+}
+
 func main() {
+	defer profile()()
+
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
 
