@@ -21,7 +21,7 @@ var commands = []*discordgo.ApplicationCommand{
 
 func setup(ctx context.Context, s *dgutil.Setup) error {
 	dg := s.Session()
-	dgutil.AddHandlerWithContext(ctx, dg, handleCommand)
+	dgutil.AddHandler(ctx, dg, handleCommand)
 
 	s.RegisterCommands(slices.Values(commands))
 
