@@ -4,9 +4,9 @@ package extract
 
 import (
 	"iter"
-	"strings"
 	"unsafe"
 
+	"github.com/DeedleFake/go-playground-bot/internal/pool"
 	"github.com/yuin/goldmark"
 	"github.com/yuin/goldmark/ast"
 	"github.com/yuin/goldmark/text"
@@ -34,7 +34,8 @@ func CodeBlocks(content string) iter.Seq[CodeBlock] {
 				cb.Language = content[n.Info.Segment.Start:n.Info.Segment.Stop]
 			}
 
-			var source strings.Builder
+			source := pool.GetBuffer()
+			defer pool.PutBuffer(source)
 			for _, segment := range allSegments(n.Lines()) {
 				source.WriteString(content[segment.Start:segment.Stop])
 			}
