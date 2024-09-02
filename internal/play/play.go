@@ -2,7 +2,6 @@
 package play
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -13,6 +12,7 @@ import (
 	"strings"
 	"unsafe"
 
+	"github.com/DeedleFake/go-playground-bot/internal/pool"
 	"golang.org/x/tools/imports"
 )
 
@@ -65,12 +65,15 @@ func Run(ctx context.Context, source string) (result Result, err error) {
 	}
 	defer rsp.Body.Close()
 
-	buf, err := io.ReadAll(rsp.Body)
+	buf := pool.GetBuffer()
+	defer pool.PutBuffer(buf)
+
+	_, err = io.Copy(buf, rsp.Body)
 	if err != nil {
 		return result, fmt.Errorf("read body: %w", err)
 	}
 
-	err = json.Unmarshal(buf, &result)
+	err = json.Unmarshal(buf.Bytes(), &result)
 	if err != nil {
 		return result, fmt.Errorf("decode result: %w\n%q", err, buf)
 	}
@@ -87,7 +90,9 @@ func Run(ctx context.Context, source string) (result Result, err error) {
 
 // MainWrap wraps source code in a main package and main function.
 func MainWrap(source string) (string, error) {
-	var buf bytes.Buffer
+	buf := pool.GetBuffer()
+	defer pool.PutBuffer(buf)
+
 	buf.WriteString("package main\n\nfunc main() {\n")
 	buf.WriteString(source)
 	buf.WriteString("\n}")
