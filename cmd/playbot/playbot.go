@@ -19,15 +19,6 @@ var commands = []*discordgo.ApplicationCommand{
 	},
 }
 
-func setup(ctx context.Context, s *dgutil.Setup) error {
-	dg := s.Session()
-	dgutil.AddHandler(ctx, dg, handleCommand)
-
-	s.RegisterCommands(slices.Values(commands))
-
-	return nil
-}
-
 func profile() func() {
 	path, ok := os.LookupEnv("PPROF")
 	if !ok {
@@ -59,7 +50,18 @@ func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
 
-	err := dgutil.Run(ctx, func(s *dgutil.Setup) error { return setup(ctx, s) })
+	bot := dgutil.Bot{
+		Commands: slices.Values(commands),
+	}
+
+	dg, err := bot.Session()
+	if err != nil {
+		slog.Error("failed to initialize Discord session", "err", err)
+		os.Exit(1)
+	}
+	dgutil.AddHandler(ctx, dg, handleCommand)
+
+	err = bot.Run(ctx)
 	if err != nil {
 		slog.Error("failed", "err", err)
 		os.Exit(1)
