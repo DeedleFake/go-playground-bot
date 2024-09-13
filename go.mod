@@ -6,6 +6,7 @@ require (
 	deedles.dev/dgutil v0.0.0-20240911161547-35bb9a481d7a
 	deedles.dev/xiter v0.0.0-20240903181553-ec85411a9550
 	github.com/bwmarrin/discordgo v0.28.1
+	github.com/thejerf/suture/v4 v4.0.5
 	github.com/yuin/goldmark v1.7.4
 	golang.org/x/tools v0.25.0
 )

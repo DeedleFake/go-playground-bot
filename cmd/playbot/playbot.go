@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"os"
 	"os/signal"
@@ -10,6 +11,7 @@ import (
 
 	"deedles.dev/dgutil"
 	"github.com/bwmarrin/discordgo"
+	"github.com/thejerf/suture/v4"
 )
 
 var commands = []*discordgo.ApplicationCommand{
@@ -44,26 +46,38 @@ func profile() func() {
 	}
 }
 
-func main() {
-	defer profile()()
+type App struct{}
 
-	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
-	defer cancel()
-
+func (a *App) Serve(ctx context.Context) error {
 	bot := dgutil.Bot{
 		Commands: slices.Values(commands),
 	}
 
 	dg, err := bot.Session()
 	if err != nil {
-		slog.Error("failed to initialize Discord session", "err", err)
-		os.Exit(1)
+		return fmt.Errorf("initialize Discord session: %w", err)
 	}
 	dgutil.AddHandler(ctx, dg, handleCommand)
 
 	err = bot.Run(ctx)
 	if err != nil {
-		slog.Error("failed", "err", err)
+		return fmt.Errorf("run bot: %w", err)
+	}
+
+	return nil
+}
+
+func main() {
+	defer profile()()
+
+	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer cancel()
+
+	sup := suture.NewSimple("playbot")
+	sup.Add(&App{})
+	err := sup.Serve(ctx)
+	if err != nil {
+		slog.Error("supervisor tree failed", "err", err)
 		os.Exit(1)
 	}
 }
