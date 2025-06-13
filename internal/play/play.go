@@ -3,7 +3,7 @@ package play
 
 import (
 	"context"
-	"encoding/json"
+	"encoding/json/v2"
 	"fmt"
 	"io"
 	"net/http"
@@ -67,13 +67,9 @@ func Run(ctx context.Context, source string) (result Result, err error) {
 
 	buf := pool.GetBuffer()
 	defer pool.PutBuffer(buf)
+	r := io.TeeReader(rsp.Body, buf)
 
-	_, err = io.Copy(buf, rsp.Body)
-	if err != nil {
-		return result, fmt.Errorf("read body: %w", err)
-	}
-
-	err = json.Unmarshal(buf.Bytes(), &result)
+	err = json.UnmarshalRead(r, &result)
 	if err != nil {
 		return result, fmt.Errorf("decode result: %w\n%q", err, buf)
 	}
