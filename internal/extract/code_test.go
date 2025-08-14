@@ -24,7 +24,7 @@ func TestCodeBlocks(t *testing.T) {
 }
 
 func BenchmarkCodeBlocks(b *testing.B) {
-	for range b.N {
+	for b.Loop() {
 		xiter.Drain(extract.CodeBlocks(source))
 	}
 }

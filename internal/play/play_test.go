@@ -39,7 +39,7 @@ func TestMainWrap(t *testing.T) {
 }
 
 func BenchmarkMainWrap(b *testing.B) {
-	for range b.N {
+	for b.Loop() {
 		play.MainWrap(`fmt.Println("test")`)
 	}
 }
