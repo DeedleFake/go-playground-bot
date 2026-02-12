@@ -3,9 +3,7 @@ package play
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	"net/url"
 	"regexp"
@@ -65,18 +63,11 @@ func Run(ctx context.Context, source string) (result Result, err error) {
 	}
 	defer rsp.Body.Close()
 
-	buf := pool.GetBuffer()
-	defer pool.PutBuffer(buf)
-
-	_, err = io.Copy(buf, rsp.Body)
+	err = unmarshal(&result, rsp.Body)
 	if err != nil {
-		return result, fmt.Errorf("read body: %w", err)
+		return result, err
 	}
 
-	err = json.Unmarshal(buf.Bytes(), &result)
-	if err != nil {
-		return result, fmt.Errorf("decode result: %w\n%q", err, buf)
-	}
 	if noPackageError.MatchString(result.Errors) {
 		source, err := MainWrap(source)
 		if err != nil {
