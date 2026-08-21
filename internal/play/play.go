@@ -3,7 +3,9 @@ package play
 
 import (
 	"context"
+	"encoding/json/v2"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"regexp"
@@ -35,6 +37,18 @@ type Event struct {
 
 	// Kind is the mechanism of the output, either stdout or stderr.
 	Kind string
+}
+
+func unmarshal(result *Result, src io.Reader) error {
+	buf := pool.GetBuffer()
+	defer pool.PutBuffer(buf)
+	r := io.TeeReader(src, buf)
+
+	err := json.UnmarshalRead(r, &result)
+	if err != nil {
+		return fmt.Errorf("decode result: %w\n%q", err, buf)
+	}
+	return nil
 }
 
 // Run runs some code in the Go Playground. If the code is submitted
